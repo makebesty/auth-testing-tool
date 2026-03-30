@@ -1,0 +1,36 @@
+name: Build Mobile App
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+          
+      - name: Install buildozer
+        run: |
+          pip install buildozer
+          sudo apt-get update
+          sudo apt-get install -y git zip unzip openjdk-17-jdk
+          
+      - name: Build Android APK
+        run: |
+          buildozer init
+          # Modify buildozer.spec for your app
+          sed -i 's/title = My Application/title = Auth Tester/' buildozer.spec
+          sed -i 's/package.name = myapp/package.name = authtester/' buildozer.spec
+          buildozer android debug
+          
+      - name: Upload APK
+        uses: actions/upload-artifact@v2
+        with:
+          name: android-app
+          path: bin/*.apk
