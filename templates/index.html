@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Auth Testing Tool</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        input, textarea {
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px;
+            border: none;
+            width: 100%;
+            cursor: pointer;
+        }
+        .results {
+            margin-top: 20px;
+            background: #f0f0f0;
+            padding: 10px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>Authentication Testing Tool</h1>
+    <div>
+        <label>Target URL:</label>
+        <input type="text" id="url" placeholder="https://example.com/login">
+        
+        <label>Identifiers (one per line):</label>
+        <textarea id="identifiers" rows="5">user1
+user2
+user3</textarea>
+        
+        <label>Passwords (one per line):</label>
+        <textarea id="passwords" rows="5">password123
+admin123
+123456</textarea>
+        
+        <button onclick="runTest()">Run Test</button>
+        
+        <div id="results" class="results">Results will appear here...</div>
+    </div>
+    
+    <script>
+        async function runTest() {
+            const url = document.getElementById('url').value;
+            const identifiers = document.getElementById('identifiers').value;
+            const passwords = document.getElementById('passwords').value;
+            
+            document.getElementById('results').innerHTML = "Testing... Please wait...";
+            
+            try {
+                const response = await fetch('/test', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({url, identifiers, passwords})
+                });
+                const data = await response.json();
+                
+                let output = `Tested: ${data.tested_combinations}\n`;
+                output += `Valid found: ${data.valid_credentials.length}\n\n`;
+                
+                if(data.valid_credentials.length > 0) {
+                    output += "VALID CREDENTIALS:\n";
+                    data.valid_credentials.forEach(cred => {
+                        output += `${cred.identifier}:${cred.password}\n`;
+                    });
+                } else {
+                    output += "No valid credentials found.";
+                }
+                
+                document.getElementById('results').innerHTML = output;
+            } catch(error) {
+                document.getElementById('results').innerHTML = `Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+  </html>
